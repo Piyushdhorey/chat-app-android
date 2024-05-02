@@ -2,15 +2,10 @@ package com.example.chatapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import com.example.chatapp.databinding.ActivityMainBinding
-import io.socket.client.IO
-import io.socket.client.Socket
-import io.socket.emitter.Emitter
-import java.net.URISyntaxException
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var socket: Socket
+    private lateinit var socketHandler: SocketHandler
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,40 +13,23 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        try {
-            socket = IO.socket(SOCKET_URL)
-            socket.connect()
-            initMain()
-        }catch (e: URISyntaxException) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun initMain() {
-        socket.on(CHAT_KEYS.NEW_MESSAGE) { args ->
-            Log.d("OnNewMessageDebug", "${args[0]}")
-        }
+        socketHandler = SocketHandler()
 
         binding.sendHello.setOnClickListener {
-            socket.emit(CHAT_KEYS.NEW_MESSAGE, "Hello")
+            val chat = Chat(
+                username = "Doctor",
+                text = "Hello, Doctor Who?"
+            )
+            socketHandler.emitChat(chat)
         }
-    }
 
-    private object CHAT_KEYS {
-        const val NEW_MESSAGE = "new_message"
-    }
+        socketHandler.onNewChat.observe(this) {
 
-    companion object {
-        const val SOCKET_URL = "http://10.0.2.2:3000/"
+        }
     }
 
     override fun onDestroy() {
-
-        if(this::socket.isInitialized) {
-            socket.disconnect()
-            socket.off(CHAT_KEYS.NEW_MESSAGE)
-        }
-
+        socketHandler.disconnectSocket()
         super.onDestroy()
     }
 }

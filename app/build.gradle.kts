@@ -47,6 +47,7 @@ dependencies {
     implementation("io.socket:socket.io-client:2.0.0") {
         exclude (group= "org.json", module= "json")
     }
+    implementation("com.google.code.gson:gson:2.8.9")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
